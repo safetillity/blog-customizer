@@ -1,4 +1,7 @@
-.main {
+:root {
 	--bg-color: #ffffff;
+}
+
+.main {
 	background-color: var(--bg-color, #ffffff);
 }
