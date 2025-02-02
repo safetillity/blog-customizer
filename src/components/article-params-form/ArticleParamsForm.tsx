@@ -43,8 +43,15 @@ export const ArticleParamsForm = () => {
 			'--bg-color': formState.backgroundColor.value,
 		};
 
+		const mainElement = document.querySelector('main');
+		if (mainElement) {
+			mainElement.style.setProperty(
+				'--bg-color',
+				formState.backgroundColor.value
+			);
+		}
 		Object.entries(variables).forEach(([key, value]) => {
-			document.documentElement.style.setProperty(key, value);
+			document.body.style.setProperty(key, value);
 		});
 	};
 
@@ -95,48 +102,45 @@ export const ArticleParamsForm = () => {
 	return (
 		<>
 			<ArrowButton onClick={toggleSidebar} isOpen={isSidebarOpen} />
-			{isSidebarOpen && (
-				<div className={styles.overlay} onClick={closeSidebar} />
-			)}
 			<aside
 				className={clsx(styles.container, {
 					[styles.container_open]: isSidebarOpen,
 				})}>
 				<form className={styles.form} ref={ref} onSubmit={handleSubmit}>
 					<Text size={31} weight={800} uppercase as='h3' align='center'>
-						Set options
+						Задайте параметры
 					</Text>
 					<Select
 						selected={formState.fontFamilyOption}
 						options={formOptions.fontFamilyOptions}
 						onChange={handleChange('fontFamilyOption')}
-						title='Font'
+						title='Шрифт'
 					/>
 					<RadioGroup
 						name='fontSize'
 						selected={formState.fontSizeOption}
 						options={formOptions.fontSizeOptions}
 						onChange={handleChange('fontSizeOption')}
-						title='Font size'
+						title='Размер шрифта'
 					/>
 					<Select
 						selected={formState.fontColor}
 						options={formOptions.fontColors}
 						onChange={handleChange('fontColor')}
-						title='Font color'
+						title='Цвет шрифта'
 					/>
 					<Separator />
 					<Select
 						selected={formState.backgroundColor}
 						options={formOptions.backgroundColors}
 						onChange={handleChange('backgroundColor')}
-						title='Background color'
+						title='Цвет фона'
 					/>
 					<Select
 						selected={formState.contentWidth}
 						options={formOptions.contentWidthArr}
 						onChange={handleChange('contentWidth')}
-						title='Content width'
+						title='Ширина контента'
 					/>
 					<div className={clsx(styles.bottomContainer)}>
 						<Button title='Сбросить' type='clear' onClick={handleReset} />
