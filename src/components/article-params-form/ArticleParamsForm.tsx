@@ -43,15 +43,10 @@ export const ArticleParamsForm = () => {
 			'--bg-color': formState.backgroundColor.value,
 		};
 
-		const mainElement = document.querySelector('main');
-		if (mainElement) {
-			mainElement.style.setProperty(
-				'--bg-color',
-				formState.backgroundColor.value
-			);
-		}
+		const mainElement = document.querySelector('main') as HTMLElement;
+
 		Object.entries(variables).forEach(([key, value]) => {
-			document.body.style.setProperty(key, value);
+			mainElement.style.setProperty(key, value);
 		});
 	};
 
