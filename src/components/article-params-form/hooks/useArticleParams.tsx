@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
 	ArticleStateType,
 	defaultArticleState,
@@ -8,17 +8,19 @@ export const useArticleParams = () => {
 	const [articleState, setArticleState] =
 		useState<ArticleStateType>(defaultArticleState);
 
-	const updateState = useCallback((newState: Partial<ArticleStateType>) => {
-		setArticleState((prevState) => ({ ...prevState, ...newState }));
-	}, []);
+	const updateState = (newState: ArticleStateType) =>
+		setArticleState((prevState) => ({
+			...prevState,
+			...newState,
+		}));
 
-	const applyState = useCallback((event: React.FormEvent) => {
+	const applyState = (event: React.FormEvent) => {
 		event.preventDefault();
-	}, []);
+	};
 
-	const resetState = useCallback(() => {
+	const resetState = () => {
 		setArticleState(defaultArticleState);
-	}, []);
+	};
 
 	return {
 		sideBarState: articleState,

@@ -1,11 +1,4 @@
-import {
-	FormEvent,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	useMemo,
-} from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
 
@@ -20,119 +13,134 @@ import {
 	fontColors,
 	backgroundColors,
 	contentWidthArr,
-	ArticleStateType,
+	defaultArticleState,
 } from 'src/constants/articleProps';
 import { Separator } from '../../ui/separator';
 import { Text } from '../../ui/text/Text';
 
-type ArticleParamsFormProps = {
-	fontFamily: (select: OptionType) => void;
-	fontSize: (select: OptionType) => void;
-	fontColor: (select: OptionType) => void;
-	backgroundColor: (select: OptionType) => void;
-	contentWidth: (select: OptionType) => void;
-	resetButton: () => void;
-	applyButton: (event: FormEvent) => void;
-	sideBarState: ArticleStateType;
-};
-
-export const ArticleParamsForm = ({
-	fontFamily,
-	fontSize,
-	fontColor,
-	backgroundColor,
-	contentWidth,
-	resetButton,
-	applyButton,
-	sideBarState,
-}: ArticleParamsFormProps) => {
+export const ArticleParamsForm = () => {
+	const [formState, setFormState] = useState(defaultArticleState);
 	const ref = useRef<HTMLFormElement | null>(null);
-	const [open, setOpen] = useState(false);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	const closeSidebar = useCallback(() => setOpen(false), []);
-	const toggleForm = useCallback(() => setOpen((prev) => !prev), []);
+	const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
+	const toggleSidebar = useCallback(
+		() => setIsSidebarOpen((prev) => !prev),
+		[]
+	);
 
 	const handleReset = useCallback(() => {
-		resetButton();
+		setFormState(defaultArticleState);
 		closeSidebar();
-	}, [resetButton, closeSidebar]);
+	}, [closeSidebar]);
+
+	const applyCSSVars = () => {
+		const variables = {
+			'--font-family': formState.fontFamilyOption.value,
+			'--font-size': formState.fontSizeOption.value,
+			'--font-color': formState.fontColor.value,
+			'--container-width': formState.contentWidth.value,
+			'--bg-color': formState.backgroundColor.value,
+		};
+
+		Object.entries(variables).forEach(([key, value]) => {
+			document.documentElement.style.setProperty(key, value);
+		});
+	};
 
 	const handleSubmit = useCallback(
 		(event: FormEvent) => {
 			event.preventDefault();
-			applyButton(event);
+			applyCSSVars();
 			closeSidebar();
 		},
-		[applyButton, closeSidebar]
+		[formState, closeSidebar]
+	);
+
+	const handleChange = useCallback(
+		(key: keyof typeof formState) => (select: OptionType) => {
+			setFormState((prev) => ({ ...prev, [key]: select }));
+		},
+		[]
 	);
 
 	useEffect(() => {
 		const handleClickOut = (event: MouseEvent) => {
-			if (open && ref.current && !ref.current.contains(event.target as Node)) {
+			if (
+				isSidebarOpen &&
+				ref.current &&
+				!ref.current.contains(event.target as Node)
+			) {
 				closeSidebar();
 			}
 		};
 
-		document.addEventListener('mousedown', handleClickOut);
-		return () => document.removeEventListener('mousedown', handleClickOut);
-	}, [open, closeSidebar]);
+		if (isSidebarOpen) {
+			document.addEventListener('mousedown', handleClickOut);
+		} else {
+			document.removeEventListener('mousedown', handleClickOut);
+		}
 
-	const formOptions = useMemo(
-		() => ({
-			fontFamilyOptions,
-			fontSizeOptions,
-			fontColors,
-			backgroundColors,
-			contentWidthArr,
-		}),
-		[]
-	);
+		return () => document.removeEventListener('mousedown', handleClickOut);
+	}, [isSidebarOpen, closeSidebar]);
+
+	const formOptions = {
+		fontFamilyOptions,
+		fontSizeOptions,
+		fontColors,
+		backgroundColors,
+		contentWidthArr,
+	};
 
 	return (
 		<>
-			<ArrowButton onClick={toggleForm} isOpen={open} />
-			{open && <div className={styles.overlay} onClick={closeSidebar} />}
+			<ArrowButton onClick={toggleSidebar} isOpen={isSidebarOpen} />
+			{isSidebarOpen && (
+				<div className={styles.overlay} onClick={closeSidebar} />
+			)}
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: open })}>
+				className={clsx(styles.container, {
+					[styles.container_open]: isSidebarOpen,
+				})}>
 				<form className={styles.form} ref={ref} onSubmit={handleSubmit}>
 					<Text size={31} weight={800} uppercase as='h3' align='center'>
 						Set options
 					</Text>
 					<Select
-						selected={sideBarState.fontFamilyOption}
+						selected={formState.fontFamilyOption}
 						options={formOptions.fontFamilyOptions}
-						onChange={fontFamily}
+						onChange={handleChange('fontFamilyOption')}
 						title='Font'
 					/>
 					<RadioGroup
 						name='fontSize'
+						selected={formState.fontSizeOption}
 						options={formOptions.fontSizeOptions}
-						selected={sideBarState.fontSizeOption}
-						onChange={fontSize}
+						onChange={handleChange('fontSizeOption')}
 						title='Font size'
 					/>
 					<Select
-						selected={sideBarState.fontColor}
+						selected={formState.fontColor}
 						options={formOptions.fontColors}
-						onChange={fontColor}
+						onChange={handleChange('fontColor')}
 						title='Font color'
 					/>
 					<Separator />
 					<Select
-						selected={sideBarState.backgroundColor}
+						selected={formState.backgroundColor}
 						options={formOptions.backgroundColors}
-						onChange={backgroundColor}
+						onChange={handleChange('backgroundColor')}
 						title='Background color'
 					/>
 					<Select
-						selected={sideBarState.contentWidth}
+						selected={formState.contentWidth}
 						options={formOptions.contentWidthArr}
-						onChange={contentWidth}
+						onChange={handleChange('contentWidth')}
 						title='Content width'
 					/>
 					<div className={clsx(styles.bottomContainer)}>
-						<Button title='Reset' type='clear' onClick={handleReset} />
-						<Button title='Apply' type='apply' />
+						<Button title='Сбросить' type='clear' onClick={handleReset} />
+						<Button title='Применить' type='apply' />
 					</div>
 				</form>
 			</aside>
