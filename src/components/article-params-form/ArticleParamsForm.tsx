@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
 
@@ -23,16 +23,13 @@ export const ArticleParamsForm = () => {
 	const ref = useRef<HTMLFormElement | null>(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	const closeSidebar = useCallback(() => setIsSidebarOpen(false), []);
-	const toggleSidebar = useCallback(
-		() => setIsSidebarOpen((prev) => !prev),
-		[]
-	);
+	const closeSidebar = () => setIsSidebarOpen(false);
+	const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
-	const handleReset = useCallback(() => {
+	const handleReset = () => {
 		setFormState(defaultArticleState);
 		closeSidebar();
-	}, [closeSidebar]);
+	};
 
 	const applyCSSVars = () => {
 		const variables = {
@@ -50,21 +47,16 @@ export const ArticleParamsForm = () => {
 		});
 	};
 
-	const handleSubmit = useCallback(
-		(event: FormEvent) => {
-			event.preventDefault();
-			applyCSSVars();
-			closeSidebar();
-		},
-		[formState, closeSidebar]
-	);
+	const handleSubmit = (event: FormEvent) => {
+		event.preventDefault();
+		applyCSSVars();
+		closeSidebar();
+	};
 
-	const handleChange = useCallback(
+	const handleChange =
 		(key: keyof typeof formState) => (select: OptionType) => {
 			setFormState((prev) => ({ ...prev, [key]: select }));
-		},
-		[]
-	);
+		};
 
 	useEffect(() => {
 		const handleClickOut = (event: MouseEvent) => {
@@ -79,11 +71,11 @@ export const ArticleParamsForm = () => {
 
 		if (isSidebarOpen) {
 			document.addEventListener('mousedown', handleClickOut);
-		} else {
-			document.removeEventListener('mousedown', handleClickOut);
 		}
 
-		return () => document.removeEventListener('mousedown', handleClickOut);
+		return () => {
+			document.removeEventListener('mousedown', handleClickOut);
+		};
 	}, [isSidebarOpen, closeSidebar]);
 
 	const formOptions = {
