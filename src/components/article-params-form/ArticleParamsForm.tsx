@@ -14,81 +14,62 @@ import {
 	backgroundColors,
 	contentWidthArr,
 	defaultArticleState,
+	ArticleStateType,
 } from 'src/constants/articleProps';
 import { Separator } from '../../ui/separator';
 import { Text } from '../../ui/text/Text';
 
-export const ArticleParamsForm = () => {
-	const [formState, setFormState] = useState(defaultArticleState);
+export type ArticleParamsFormProps = {
+	setArticleState: (value: ArticleStateType) => void;
+};
+
+export const ArticleParamsForm = (props: ArticleParamsFormProps) => {
+	const { setArticleState } = props;
+
+	const [formState, setFormState] =
+		useState<ArticleStateType>(defaultArticleState);
 	const ref = useRef<HTMLFormElement | null>(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-	const closeSidebar = () => setIsSidebarOpen(false);
-	const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-
 	const handleReset = () => {
 		setFormState(defaultArticleState);
-		closeSidebar();
-	};
-
-	const applyCSSVars = () => {
-		const variables = {
-			'--font-family': formState.fontFamilyOption.value,
-			'--font-size': formState.fontSizeOption.value,
-			'--font-color': formState.fontColor.value,
-			'--container-width': formState.contentWidth.value,
-			'--bg-color': formState.backgroundColor.value,
-		};
-
-		const mainElement = document.querySelector('main') as HTMLElement;
-
-		Object.entries(variables).forEach(([key, value]) => {
-			mainElement.style.setProperty(key, value);
-		});
+		setArticleState(defaultArticleState);
+		setIsSidebarOpen(false);
 	};
 
 	const handleSubmit = (event: FormEvent) => {
 		event.preventDefault();
-		applyCSSVars();
-		closeSidebar();
+		setArticleState(formState);
+		setIsSidebarOpen(false);
 	};
 
 	const handleChange =
-		(key: keyof typeof formState) => (select: OptionType) => {
+		(key: keyof ArticleStateType) => (select: OptionType) => {
 			setFormState((prev) => ({ ...prev, [key]: select }));
 		};
 
 	useEffect(() => {
+		if (!isSidebarOpen) return;
+
 		const handleClickOut = (event: MouseEvent) => {
-			if (
-				isSidebarOpen &&
-				ref.current &&
-				!ref.current.contains(event.target as Node)
-			) {
-				closeSidebar();
+			if (ref.current && !ref.current.contains(event.target as Node)) {
+				setIsSidebarOpen(false);
 			}
 		};
 
-		if (isSidebarOpen) {
-			document.addEventListener('mousedown', handleClickOut);
-		}
+		document.addEventListener('mousedown', handleClickOut);
 
 		return () => {
 			document.removeEventListener('mousedown', handleClickOut);
 		};
-	}, [isSidebarOpen, closeSidebar]);
-
-	const formOptions = {
-		fontFamilyOptions,
-		fontSizeOptions,
-		fontColors,
-		backgroundColors,
-		contentWidthArr,
-	};
+	}, [isSidebarOpen]);
 
 	return (
 		<>
-			<ArrowButton onClick={toggleSidebar} isOpen={isSidebarOpen} />
+			<ArrowButton
+				onClick={() => setIsSidebarOpen((prev) => !prev)}
+				isOpen={isSidebarOpen}
+			/>
 			<aside
 				className={clsx(styles.container, {
 					[styles.container_open]: isSidebarOpen,
@@ -99,33 +80,33 @@ export const ArticleParamsForm = () => {
 					</Text>
 					<Select
 						selected={formState.fontFamilyOption}
-						options={formOptions.fontFamilyOptions}
+						options={fontFamilyOptions}
 						onChange={handleChange('fontFamilyOption')}
 						title='Шрифт'
 					/>
 					<RadioGroup
 						name='fontSize'
 						selected={formState.fontSizeOption}
-						options={formOptions.fontSizeOptions}
+						options={fontSizeOptions}
 						onChange={handleChange('fontSizeOption')}
 						title='Размер шрифта'
 					/>
 					<Select
 						selected={formState.fontColor}
-						options={formOptions.fontColors}
+						options={fontColors}
 						onChange={handleChange('fontColor')}
 						title='Цвет шрифта'
 					/>
 					<Separator />
 					<Select
 						selected={formState.backgroundColor}
-						options={formOptions.backgroundColors}
+						options={backgroundColors}
 						onChange={handleChange('backgroundColor')}
 						title='Цвет фона'
 					/>
 					<Select
 						selected={formState.contentWidth}
-						options={formOptions.contentWidthArr}
+						options={contentWidthArr}
 						onChange={handleChange('contentWidth')}
 						title='Ширина контента'
 					/>
